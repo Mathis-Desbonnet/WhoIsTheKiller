@@ -1,0 +1,147 @@
+#include <stdio.h>
+#include <windows.h>
+#include "game.h"
+
+int main(void) {
+    int choice;
+    int error;
+    int diceNumber;
+    Player firstPlayer;
+    int movePossibilities[4];
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+    int map[25][24] = {
+        {
+            2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 2, 2, 0, 0, 0, 1, 0, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 3, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                0, 1, 1, 1, 1, 3, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 3, 2, 2, 2, 2, 2, 2
+        },
+        {
+                0, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1, 3, 1, 1, 1, 1, 1, 0
+        },
+        {
+                2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+        },
+        {
+                2, 2, 2, 2, 2, 2, 3, 3, 1, 2, 2, 2, 2, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 0
+        },
+        {
+                2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2, 3, 2, 2, 2, 2, 2, 2
+        },
+        {
+                0, 2, 2, 3, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                0, 3, 1, 3, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 3, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 3, 3, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 0
+        },
+        {
+                0, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 2, 2, 2, 3, 2, 1, 1, 1, 3, 1, 1, 1, 1
+        },
+        {
+                1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 3, 2, 2, 2, 0
+        },
+        {
+                0, 2, 2, 2, 3, 3, 1, 3, 3, 2, 2, 2, 2, 2, 2, 3, 3, 1, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2
+        },
+        {
+                2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 0, 2, 2, 2, 2, 2, 2
+        },
+        {
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        },
+    };
+    Position startersPos[6] = {{0, 6}, {0, 16}, {7, 23}, {18, 0}, {24, 9}, {24, 14}};
+    do {
+        printf("Choose your player :\n0 -> MOUTARDE\n1 -> OLIVE\n2 -> VIOLET\n3 -> PERVENCHE\n4 -> ROSE\n5 -> LEBLANC\n");
+        error = scanf("%d", &choice);
+    } while (choice < 0 || choice > 6 || error == 0);
+    firstPlayer.name = choice;
+    firstPlayer.playerPos.posX = startersPos[choice].posX;
+    firstPlayer.playerPos.posY = startersPos[choice].posY;
+
+    do {
+        diceNumber = rollTheDice();
+        printf("%d\n", diceNumber);
+        printMapAndPlayer(firstPlayer, map);
+        while (diceNumber > 0) {
+
+            resetMovementPossibilities(movePossibilities);
+            updateMovementPossibilities(movePossibilities, firstPlayer.playerPos.posX, firstPlayer.playerPos.posY, map);
+            printPossibilities(movePossibilities);
+            scanf("%d", &choice);
+            switch (choice) {
+                case 1:
+                    if (movePossibilities[0] == 1) {
+                        firstPlayer.playerPos.posX -= 1;
+                    } else {
+                        printf("MOVEMENT NOT POSSIBLE\n");
+                    }
+                    break;
+                case 2:
+                    if (movePossibilities[1] == 1) {
+                        firstPlayer.playerPos.posY += 1;
+                    } else {
+                        printf("MOVEMENT NOT POSSIBLE\n");
+                    }
+                    break;
+                case 3:
+                    if (movePossibilities[2] == 1) {
+                        firstPlayer.playerPos.posX += 1;
+                    } else {
+                        printf("MOVEMENT NOT POSSIBLE\n");
+                    }
+                    break;
+                case 4:
+                    if (movePossibilities[3] == 1) {
+                        firstPlayer.playerPos.posY -= 1;
+                    } else {
+                        printf("MOVEMENT NOT POSSIBLE\n");
+                    }
+                    break;
+            }
+            diceNumber--;
+            printf("Movement Left : %d\n", diceNumber);
+            printMapAndPlayer(firstPlayer, map);
+        }
+        printf("Next choice : ");
+        scanf("%d", &choice);
+    } while (choice != -1);
+    return 0;
+}
