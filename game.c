@@ -39,7 +39,6 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
             for (int k = 0; k < newGame.numberOfNPCs; k++) {
                 if (newGame.NPCs[k]->playerPos.posX == i && newGame.NPCs[k]->playerPos.posY == j) {
                     switch (newGame.NPCs[k]->name) {
-
                         case MOUTARDE:
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                             break;
@@ -83,6 +82,26 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
             }
         }
         printf("\n");
+        switch (firstPlayer.name) {
+            case MOUTARDE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                break;
+            case OLIVE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+                break;
+            case VIOLET:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                break;
+            case PERVENCHE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+                break;
+            case ROSE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                break;
+            case LEBLANC:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                break;
+        }
     }
 }
 
