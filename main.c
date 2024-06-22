@@ -3,8 +3,11 @@
 #include "game.h"
 
 int main(void) {
+    srand(time(NULL));
     int choice;
-    int error;
+    int maxFirstDiceRoll;
+    int temp;
+    int indexOfNextPlayer;
     Player firstPlayerw;
     Game newGame;
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -89,12 +92,23 @@ int main(void) {
     printf("--------------------||WELCOME TO CLUEDO||--------------------\n");
     Position startersPos[6] = {{0, 6}, {0, 16}, {7, 23}, {18, 0}, {24, 9}, {24, 14}};
     createANewGame(startersPos, &newGame);
-    do {
-        for (int i = 0; i<newGame.numberOfPlayer; i++) {
-            playerMovement(newGame.allThePlayers[0], map, newGame);
+    maxFirstDiceRoll = 0;
+    indexOfNextPlayer = 0;
+    for (int i = 0; i<newGame.numberOfPlayer; i++) {
+        temp = rollTheDice();
+        printf("Player %d : %d\n", i+1, temp);
+        if (temp > maxFirstDiceRoll) {
+            maxFirstDiceRoll = temp;
+            indexOfNextPlayer = i;
         }
+    }
+    do {
+        printf("It's time for player %d\n", indexOfNextPlayer+1);
+        playerMovement(newGame.allThePlayers[indexOfNextPlayer], map, newGame);
         printf("Next choice : ");
         scanf("%d", &choice);
+        indexOfNextPlayer++;
+        indexOfNextPlayer = indexOfNextPlayer%newGame.numberOfPlayer;
     } while (choice != -1);
     free(newGame.allTheRooms);
     free(newGame.allThePlayers);
