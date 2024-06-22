@@ -83,3 +83,73 @@ int rollTheDice() {
     srand(time(NULL));
     return rand()%11 + 1;
 }
+
+void playerMovement(Player *player, int map[25][24]) {
+    int diceNumber = rollTheDice();
+    int choice;
+    int movePossibilities[4];
+    printf("%d\n", diceNumber);
+    printMapAndPlayer((*player), map);
+    while (diceNumber > 0) {
+        resetMovementPossibilities(movePossibilities);
+        updateMovementPossibilities(movePossibilities, (*player).playerPos.posX, (*player).playerPos.posY, map);
+        printPossibilities(movePossibilities);
+        if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
+            if ((*player).roomIndexIn == -1) {
+                printf("Enter the room -> 5\n");
+            } else {
+                printf("Exit the room -> 5\n");
+            }
+        }
+        printf("\n\n\n\n\n\n\n\n\n");
+        scanf("%d", &choice);
+        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        switch (choice) {
+            case 1:
+                if (movePossibilities[0] == 1) {
+                    (*player).playerPos.posX -= 1;
+                } else {
+                    printf("MOVEMENT NOT POSSIBLE\n");
+                }
+                break;
+            case 2:
+                if (movePossibilities[1] == 1) {
+                    (*player).playerPos.posY += 1;
+                } else {
+                    printf("MOVEMENT NOT POSSIBLE\n");
+                }
+                break;
+            case 3:
+                if (movePossibilities[2] == 1) {
+                    (*player).playerPos.posX += 1;
+                } else {
+                    printf("MOVEMENT NOT POSSIBLE\n");
+                }
+                break;
+            case 4:
+                if (movePossibilities[3] == 1) {
+                    (*player).playerPos.posY -= 1;
+                } else {
+                    printf("MOVEMENT NOT POSSIBLE\n");
+                }
+                break;
+            case 5:
+                if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13) {
+                    if ((*player).roomIndexIn == -1) {
+                        (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
+                    } else {
+                        (*player).roomIndexIn = -1;
+                    }
+                } else {
+                    printf("MOVEMENT NOT POSSIBLE\n");
+                }
+                break;
+            default:
+                printf("MOVEMENT NOT POSSIBLE\n");
+                break;
+        }
+        diceNumber--;
+        printf("Movement Left : %d\n", diceNumber);
+        printMapAndPlayer((*player), map);
+    }
+}

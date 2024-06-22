@@ -23,4 +23,6 @@ void updateMovementPossibilities(int moveArray[4], int i, int j, int map[25][24]
 void printPossibilities(int moveArray[4]);
 int rollTheDice();
 
+void playerMovement(Player *player, int map[25][24]);
+
 #endif //CLUEDO_GAME_H
