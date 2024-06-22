@@ -49,6 +49,7 @@ typedef struct {
 typedef struct {
     CharactersName name;
     Position playerPos;
+    int roomIndexIn;
 } Player;
 
 #endif //CLUEDO_CHARACTERS_H

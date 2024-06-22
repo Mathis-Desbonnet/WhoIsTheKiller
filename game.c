@@ -23,7 +23,7 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24]) {
                 if (map[i][j] == 0) {
                     printf(" ");
                 }
-                if (map[i][j] == 3) {
+                if (map[i][j] >= 3) {
                     SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY);
                     printf("|");
                 }
@@ -42,22 +42,22 @@ void resetMovementPossibilities(int moveArray[4]) {
 
 void updateMovementPossibilities(int moveArray[4], int i, int j, int map[25][24]) {
     if (i > 0) {
-        if (map[i-1][j] == 1 || map[i-1][j] == 3) {
+        if (map[i-1][j] == 1 || map[i-1][j] >= 13) {
             moveArray[0] = 1;
         }
     }
     if (j < 24) {
-        if (map[i][j+1] == 1 || map[i-1][j] == 3) {
+        if (map[i][j+1] == 1 || map[i][j+1] >= 13) {
             moveArray[1] = 1;
         }
     }
     if (i < 25) {
-        if (map[i+1][j] == 1 || map[i-1][j] == 3) {
+        if (map[i+1][j] == 1 || map[i+1][j] >= 13) {
             moveArray[2] = 1;
         }
     }
     if (j > 0) {
-        if (map[i][j-1] == 1 || map[i-1][j] == 3) {
+        if (map[i][j-1] == 1 || map[i][j-1] >= 13) {
             moveArray[3] = 1;
         }
     }
