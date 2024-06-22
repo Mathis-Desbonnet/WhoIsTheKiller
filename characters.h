@@ -28,7 +28,7 @@ typedef struct {
 typedef struct {
     RoomsName name;
     Doors* allDoors;
-    SecretWay secretWay;
+    SecretWay* secretWay;
 } Room;
 
 typedef enum {
