@@ -14,8 +14,10 @@
 typedef struct {
     Killer killer;
     Player** allThePlayers;
+    Player** NPCs;
     Room** allTheRooms;
     int numberOfPlayer;
+    int numberOfNPCs;
 } Game;
 
 void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame);

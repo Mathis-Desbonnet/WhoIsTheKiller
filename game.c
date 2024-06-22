@@ -6,32 +6,102 @@
 
 void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    int printPlayer;
     for (int i = 0; i < 25; i++) {
         for (int j = 0; j < 24; j++) {
+            printPlayer = 0;
             for (int k = 0; k < newGame.numberOfPlayer; k++) {
                 if (newGame.allThePlayers[k]->playerPos.posX == i && newGame.allThePlayers[k]->playerPos.posY == j) {
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
-                    printf("X");
-                } else {
-                    if (map[i][j] == 2) {
-                        SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                        printf("#");
+                    switch (newGame.allThePlayers[k]->name) {
+
+                        case MOUTARDE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                            break;
+                        case OLIVE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+                            break;
+                        case VIOLET:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                            break;
+                        case PERVENCHE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+                            break;
+                        case ROSE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                            break;
+                        case LEBLANC:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                            break;
                     }
-                    if (map[i][j] == 1) {
-                        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-                        printf("0");
+                    printPlayer = 1;
+                }
+            }
+            for (int k = 0; k < newGame.numberOfNPCs; k++) {
+                if (newGame.NPCs[k]->playerPos.posX == i && newGame.NPCs[k]->playerPos.posY == j) {
+                    switch (newGame.NPCs[k]->name) {
+                        case MOUTARDE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                            break;
+                        case OLIVE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+                            break;
+                        case VIOLET:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                            break;
+                        case PERVENCHE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+                            break;
+                        case ROSE:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                            break;
+                        case LEBLANC:
+                            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                            break;
                     }
-                    if (map[i][j] == 0) {
-                        printf(" ");
-                    }
-                    if (map[i][j] >= 3) {
-                        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY);
-                        printf("|");
-                    }
+                    printPlayer = 1;
+                }
+            }
+            if (printPlayer) {
+                printf("X");
+            } else {
+                if (map[i][j] == 2) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                    printf("#");
+                }
+                if (map[i][j] == 1) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                    printf("0");
+                }
+                if (map[i][j] == 0) {
+                    printf(" ");
+                }
+                if (map[i][j] >= 3) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY);
+                    printf("|");
                 }
             }
         }
         printf("\n");
+        switch (firstPlayer.name) {
+            case MOUTARDE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+                break;
+            case OLIVE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+                break;
+            case VIOLET:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                break;
+            case PERVENCHE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+                break;
+            case ROSE:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                break;
+            case LEBLANC:
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                break;
+        }
     }
 }
 
@@ -81,7 +151,6 @@ void printPossibilities(int moveArray[4]) {
 }
 
 int rollTheDice() {
-    srand(time(NULL));
     return rand()%11 + 1;
 }
 
@@ -89,7 +158,7 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     int diceNumber = rollTheDice();
     int choice;
     int movePossibilities[4];
-    printf("%d\n", diceNumber);
+    printf("Movement Left : %d\n", diceNumber);
     printMapAndPlayer((*player), map, newGame);
     while (diceNumber > 0) {
         resetMovementPossibilities(movePossibilities);
@@ -161,6 +230,8 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
 
 void createANewGame(const Position *startersPos, Game *newGame) {
     int choice, error;
+    char* allNames[6] = {"MOUTARDE", "OLIVE", "VIOLET", "PERVENCHE", "ROSE", "LEBLANC"};
+    int allNamesIndex[6] = {0, 1, 2, 3, 4, 5};
     (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 9);
     for (int i = 0; i<9; i++) {
         (*newGame).allTheRooms[i] = (Room*) malloc(sizeof(Room));
@@ -171,16 +242,48 @@ void createANewGame(const Position *startersPos, Game *newGame) {
     printf("Choose number of player :");
     scanf("%d", &choice);
     (*newGame).numberOfPlayer = choice;
-    (*newGame).allThePlayers = (Player**) malloc(sizeof(Player*) * 6);
+    (*newGame).allThePlayers = (Player**) malloc(sizeof(Player*) * newGame->numberOfPlayer);
     for (int i = 0; i < (*newGame).numberOfPlayer; i++) {
         (*newGame).allThePlayers[i] = (Player*) malloc(sizeof(Player));
         do {
-            printf("Choose your player :\n0 -> MOUTARDE\n1 -> OLIVE\n2 -> VIOLET\n3 -> PERVENCHE\n4 -> ROSE\n5 -> LEBLANC\n");
+            printf("Choose your player :\n");
+            //List of all the characters available
+            for (int j = 0; j<6-i; j++) {
+                printf("%d -> %s\n", allNamesIndex[j], allNames[allNamesIndex[j]]);
+            }
             error = scanf("%d", &choice);
-        } while (choice < 0 || choice> 6 || error == 0);
+        } while (choice < 0 || choice > 6 || error == 0);
+        //Delete index of names for the listing
+        for (int j = 0; j<6-i-1; j++) {
+            if (allNamesIndex[j] >= choice) {
+                allNamesIndex[j] = allNamesIndex[j+1];
+            }
+        }
+        //Init the player
         (*newGame).allThePlayers[i]->name = choice;
         (*newGame).allThePlayers[i]->playerPos.posX = startersPos[choice].posX;
         (*newGame).allThePlayers[i]->playerPos.posY = startersPos[choice].posY;
         (*newGame).allThePlayers[i]->roomIndexIn = -1;
+    }
+    int isAPlayer;
+    newGame->numberOfNPCs = 6 - newGame->numberOfPlayer;
+    newGame->NPCs = (Player**) malloc(sizeof(Player*)*newGame->numberOfNPCs);
+    int indexOfNPCs = 0;
+    for (int i = 0; i<6; i++) {
+        //Search if the character is a player
+        isAPlayer = 0;
+        for (int j = 0; j<newGame->numberOfPlayer; j++) {
+            if (newGame->allThePlayers[j]->name == i) {
+                isAPlayer = 1;
+            }
+        }
+        //If not, adding him to the NPCs array
+        if (!isAPlayer) {
+            newGame->NPCs[indexOfNPCs] = (Player*) malloc(sizeof(Player));
+            newGame->NPCs[indexOfNPCs]->name = i;
+            (*newGame).NPCs[indexOfNPCs]->playerPos.posX = startersPos[i].posX;
+            (*newGame).NPCs[indexOfNPCs]->playerPos.posY = startersPos[i].posY;
+            indexOfNPCs++;
+        }
     }
 }
