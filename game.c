@@ -158,7 +158,7 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     int diceNumber = rollTheDice();
     int choice;
     int movePossibilities[4];
-    printf("%d\n", diceNumber);
+    printf("Movement Left : %d\n", diceNumber);
     printMapAndPlayer((*player), map, newGame);
     while (diceNumber > 0) {
         resetMovementPossibilities(movePossibilities);
