@@ -2,12 +2,11 @@
 #include <windows.h>
 #include "game.h"
 
-
-
 int main(void) {
     int choice;
     int error;
-    Player firstPlayer;
+    Player firstPlayerw;
+    Game newGame;
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
     int map[25][24] = {
@@ -87,21 +86,18 @@ int main(void) {
                     0, 0,  0, 0,  0, 0,  0,  0,  0, 1,  2, 2,  2,  2, 1,  0,  0,  0,  0, 0,  0, 0, 0, 0
             },
     };
+    printf("--------------------||WELCOME TO CLUEDO||--------------------\n");
     Position startersPos[6] = {{0, 6}, {0, 16}, {7, 23}, {18, 0}, {24, 9}, {24, 14}};
+    createANewGame(startersPos, &newGame);
     do {
-        printf("Choose your player :\n0 -> MOUTARDE\n1 -> OLIVE\n2 -> VIOLET\n3 -> PERVENCHE\n4 -> ROSE\n5 -> LEBLANC\n");
-        error = scanf("%d", &choice);
-    } while (choice < 0 || choice > 6 || error == 0);
-    firstPlayer.name = choice;
-    firstPlayer.playerPos.posX = startersPos[choice].posX;
-    firstPlayer.playerPos.posY = startersPos[choice].posY;
-    firstPlayer.roomIndexIn = -1;
-
-    do {
-        playerMovement(&firstPlayer, map);
+        for (int i = 0; i<newGame.numberOfPlayer; i++) {
+            playerMovement(newGame.allThePlayers[0], map, newGame);
+        }
         printf("Next choice : ");
         scanf("%d", &choice);
     } while (choice != -1);
+    free(newGame.allTheRooms);
+    free(newGame.allThePlayers);
+    printf("GOOD BYE!");
     return 0;
 }
-
