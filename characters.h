@@ -21,6 +21,11 @@ typedef struct {
 } Doors;
 
 typedef struct {
+    int posX;
+    int posY;
+} Position;
+
+typedef struct {
     RoomsName room1;
     RoomsName room2;
 } SecretWay;
@@ -29,6 +34,8 @@ typedef struct {
     RoomsName name;
     Doors* allDoors;
     SecretWay* secretWay;
+    Position* roomPosition;
+    int roomPosLogSize;
 } Room;
 
 typedef enum {
@@ -40,11 +47,6 @@ typedef struct {
     RoomsName room;
     Weapons weapons;
 } Killer;
-
-typedef struct {
-    int posX;
-    int posY;
-} Position;
 
 typedef struct {
     CharactersName name;

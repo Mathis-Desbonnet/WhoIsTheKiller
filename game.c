@@ -64,7 +64,7 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
             if (printPlayer) {
                 printf("X");
             } else {
-                if (map[i][j] == 2) {
+                if (map[i][j] == 2 || map[i][j]<0) {
                     SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                     printf("#");
                 }
@@ -162,7 +162,9 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     printMapAndPlayer((*player), map, newGame);
     while (diceNumber > 0) {
         resetMovementPossibilities(movePossibilities);
-        updateMovementPossibilities(movePossibilities, (*player).playerPos.posX, (*player).playerPos.posY, map);
+        if (player->roomIndexIn == -1) {
+            updateMovementPossibilities(movePossibilities, (*player).playerPos.posX, (*player).playerPos.posY, map);
+        }
         printPossibilities(movePossibilities);
         if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
             if ((*player).roomIndexIn == -1) {
@@ -211,9 +213,10 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
                 if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13) {
                     if ((*player).roomIndexIn == -1) {
                         (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
-                    } else {
-                        (*player).roomIndexIn = -1;
+                        diceNumber--;
                     }
+                } else if (player->roomIndexIn != -1) {
+                    (*player).roomIndexIn = -1;
                     diceNumber--;
                 } else {
                     printf("MOVEMENT NOT POSSIBLE\n");
@@ -228,16 +231,33 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     }
 }
 
-void createANewGame(const Position *startersPos, Game *newGame) {
+void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]) {
     int choice, error;
     char* allNames[6] = {"MOUTARDE", "OLIVE", "VIOLET", "PERVENCHE", "ROSE", "LEBLANC"};
     int allNamesIndex[6] = {0, 1, 2, 3, 4, 5};
-    (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 9);
+    (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 10);
     for (int i = 0; i<9; i++) {
         (*newGame).allTheRooms[i] = (Room*) malloc(sizeof(Room));
         (*newGame).allTheRooms[i]->name = i;
         (*newGame).allTheRooms[i]->secretWay = NULL;
         (*newGame).allTheRooms[i]->allDoors = NULL;
+        (*newGame).allTheRooms[i]->roomPosition = NULL;
+        (*newGame).allTheRooms[i]->roomPosLogSize = 0;
+    }
+    int index;
+    //Append all position for all the rooms into their array
+    for (int i = 0; i<25; i++) {
+        for (int j = 0; j<24; j++) {
+            index = map[i][j];
+            if (index < 0) {
+                (*newGame).allTheRooms[index+10]->roomPosition = (Position*) realloc((*newGame).allTheRooms[index+10]->roomPosition, ((*newGame).allTheRooms[index+10]->roomPosLogSize+1)*
+                                                                                                                              sizeof(Position));
+                newGame->allTheRooms[index+10]->roomPosition[(*newGame).allTheRooms[index+10]->roomPosLogSize].posX = i;
+                newGame->allTheRooms[index+10]->roomPosition[(*newGame).allTheRooms[index+10]->roomPosLogSize].posY = j;
+                (*newGame).allTheRooms[index+10]->roomPosLogSize += 1;
+                printf("%d:%d\t%d\n", i, j, index+10);
+            }
+        }
     }
     printf("Choose number of player :");
     scanf("%d", &choice);

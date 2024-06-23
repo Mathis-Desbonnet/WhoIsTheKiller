@@ -27,6 +27,6 @@ void printPossibilities(int moveArray[4]);
 int rollTheDice();
 
 void playerMovement(Player *player, int map[25][24], Game newGame);
-void createANewGame(const Position *startersPos, Game *newGame);
+void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]);
 
 #endif //CLUEDO_GAME_H
