@@ -166,16 +166,16 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
             updateMovementPossibilities(movePossibilities, (*player).playerPos.posX, (*player).playerPos.posY, map);
         }
         printPossibilities(movePossibilities);
-        if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
-            if ((*player).roomIndexIn == -1) {
-                printf("Enter the room -> 5\n");
-            } else {
-                printf("Exit the room -> 5\n");
-            }
+        if (player->roomIndexIn != -1) {
+            printf("Exit the room -> 5\n");
+        } else if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
+            printf("Enter the room -> 5\n");
         }
         printf("\n\n\n\n\n\n\n\n\n");
         scanf("%d", &choice);
         printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        int randomPositionIntoTheRoom;
+        int canGoInTheRoom = 1;
         switch (choice) {
             case 1:
                 if (movePossibilities[0] == 1) {
@@ -213,6 +213,17 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
                 if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13) {
                     if ((*player).roomIndexIn == -1) {
                         (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
+                        do {
+                            randomPositionIntoTheRoom = rand()%newGame.allTheRooms[player->roomIndexIn]->roomPosLogSize;
+                            canGoInTheRoom = 1;
+                            for (int i = 0; i<newGame.numberOfPlayer; i++) {
+                                if (newGame.allThePlayers[i]->playerPos.posX == newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX && newGame.allThePlayers[i]->playerPos.posX == newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY) {
+                                    canGoInTheRoom = 0;
+                                }
+                            }
+                        } while (!canGoInTheRoom);
+                        player->playerPos.posX = newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX;
+                        player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY;
                         diceNumber--;
                     }
                 } else if (player->roomIndexIn != -1) {
