@@ -13,6 +13,10 @@ typedef enum {
     HALL, BAR, SALLE_A_MANGER, CUISINE, SALLE_DE_BALLE, CONSERVATOIRE, BILLIARD, BIBLIOTHEQUE, BUREAU
 } RoomsName;
 
+typedef enum {
+    POIGNARD, CHANDELIER, REVOLVER, CORDE, BARRE_DE_FER, CLE_A_MOLETTE
+} Weapons;
+
 typedef struct {
     int posXOut;
     int posYOut;
@@ -39,10 +43,6 @@ typedef struct {
     int numberOfDoors;
 } Room;
 
-typedef enum {
-    POIGNARD, CHANDELIER, REVOLVER, CORDE, BARRE_DE_FER, CLE_A_MOLETTE
-} Weapons;
-
 typedef struct {
     CharactersName name;
     RoomsName room;
@@ -50,9 +50,15 @@ typedef struct {
 } Killer;
 
 typedef struct {
+    int* playerCards;
+    int numberOfCard;
+} Card;
+
+typedef struct {
     CharactersName name;
     Position playerPos;
     int roomIndexIn;
+    Card* Card;
 } Player;
 
 #endif //CLUEDO_CHARACTERS_H
