@@ -4,8 +4,6 @@
 
 #include "game.h"
 
-void createRooms(const Game *newGame, int i);
-
 void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     int printPlayer;
@@ -160,6 +158,10 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     int diceNumber = rollTheDice();
     int choice;
     int movePossibilities[4];
+    int indexPlayer;
+    CharactersName nameChoice;
+    Weapons weaponChoice;
+    RoomsName roomChoice;
     printf("Movement Left : %d\n", diceNumber);
     printMapAndPlayer((*player), map, newGame);
     while (diceNumber > 0) {
@@ -173,6 +175,8 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
         } else if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
             printf("Enter the room -> 5\n");
         }
+        printf("Finish/Skip your turn -> 6\n");
+        printf("If you want to accuse someone -> 7\n");
         printf("\n\n\n\n\n\n\n\n\n");
         scanf("%d", &choice);
         printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -212,22 +216,33 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
                 }
                 break;
             case 5:
-                if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13) {
-                    if ((*player).roomIndexIn == -1) {
-                        (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
-                        do {
-                            randomPositionIntoTheRoom = rand()%newGame.allTheRooms[player->roomIndexIn]->roomPosLogSize;
-                            canGoInTheRoom = 1;
-                            for (int i = 0; i<newGame.numberOfPlayer; i++) {
-                                if (newGame.allThePlayers[i]->playerPos.posX == newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX && newGame.allThePlayers[i]->playerPos.posX == newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY) {
-                                    canGoInTheRoom = 0;
-                                }
-                            }
-                        } while (!canGoInTheRoom);
-                        player->playerPos.posX = newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX;
-                        player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY;
-                        diceNumber--;
+                // If not in a room, but on a door
+                if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13 && (*player).roomIndexIn == -1) {
+                    (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
+
+                    //Move to a random pos into the room
+                    movePlayerToRandomPosInARoom(&newGame, indexPlayer, player);
+
+                    printf("You can now make a request for someone !\n");
+                    printf("If you want to make a request -> 1\nOr else -> 0\n");
+                    scanf("%d", &choice);
+                    if (choice) {
+                        ChoosePlayerAndWeapon(&nameChoice, &weaponChoice);
+                        indexPlayer = getIndexByName(&newGame, &nameChoice);
+                        if (indexPlayer<10) {
+                            newGame.allThePlayers[indexPlayer]->roomIndexIn = player->roomIndexIn;
+
+                            //Move to a random pos into the room
+                            movePlayerToRandomPosInARoom(&newGame, indexPlayer, newGame.allThePlayers[indexPlayer]);
+                        } else {
+                            newGame.NPCs[indexPlayer-10]->roomIndexIn = player->roomIndexIn;
+
+                            //Move to a random pos into the room
+                            movePlayerToRandomPosInARoom(&newGame, indexPlayer, newGame.NPCs[indexPlayer-10]);
+                        }
                     }
+                    diceNumber = 0;
+                //If in a room and want to exit
                 } else if (player->roomIndexIn != -1) {
                     for (int i = 0; i<newGame.allTheRooms[player->roomIndexIn]->numberOfDoors; i++) {
                         printf("Exit %d : %d-%d\n", i+1, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posXOut, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posYOut);
@@ -240,8 +255,51 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
                     player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posYOut;
                     (*player).roomIndexIn = -1;
                     diceNumber--;
+                // If not in a room and NOT on a door
                 } else {
                     printf("MOVEMENT NOT POSSIBLE\n");
+                }
+                break;
+            case 6: // Skip a turn
+                diceNumber = 0;
+                break;
+            case 7: // Accuse someone
+                printf("WARNING : You are going to do an accusation. If you're sure about the killer you can continue. But if you're wrong, you will not be able to continue to play....\n");
+                printf("Continue -> 1\nExit -> 0");
+                scanf("%d", &choice);
+                if (choice) {
+                    printf("Choose the name of the killer:\n");
+                    for (int i = 0; i<6; i++) {
+                        printNameWithInt(i);
+                        printf("-> %d\n", i);
+                    }
+                    scanf("%d", &nameChoice);
+                    printf("Choose the weapon of the killer:\n");
+                    for (int i = 0; i<6; i++) {
+                        printWeaponsWithInt(i);
+                        printf("-> %d\n", i);
+                    }
+                    scanf("%d", &weaponChoice);
+                    printf("Choose the room where M. LeNoir has been killed:\n");
+                    for (int i = 0; i<9; i++) {
+                        printRoomsWithInt(i);
+                        printf("-> %d\n", i);
+                    }
+                    scanf("%d", &roomChoice);
+
+                    printf("Keep the next screen secret, the identity of the killer will be revealed. If you're right, you'll win. Else, please, do not share any information !\n");
+                    printf("Write something to continue:");
+                    scanf("%d", &choice);
+                    printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                    printf("The killer is :");
+                    printNameWithInt(newGame.killer.name);
+                    printWeaponsWithInt(newGame.killer.weapons);
+                    printRoomsWithInt(newGame.killer.room);
+                    if (newGame.killer.name == nameChoice && newGame.killer.weapons == weaponChoice && newGame.killer.room == roomChoice) {
+                        printf("You WIIINNN !!!!!!!!!!!!!!!!!!");
+                    } else {
+                        printf("You Lose, do not share any information");
+                    }
                 }
                 break;
             default:
@@ -251,6 +309,64 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
         printf("Movement Left : %d\n", diceNumber);
         printMapAndPlayer((*player), map, newGame);
     }
+    printf("Before finishing your turn, you can accuse someone :");
+    scanf("%d", &choice);
+}
+
+void ChoosePlayerAndWeapon(CharactersName *nameChoice, Weapons *weaponChoice) {
+    printf("Choose the player :\n");
+    for (int i = 0; i <6; i++) {
+        printNameWithInt(i);
+        printf("->%d\n", i);
+    }
+    scanf("%d", nameChoice);
+    printf("Choose the weapons :\n");
+    for (int i = 0; i <6; i++) {
+        printWeaponsWithInt(i);
+        printf("->%d\n", i);
+    }
+    scanf("%d", weaponChoice);
+}
+
+int getIndexByName(Game *newGame, CharactersName *nameChoice) {
+    int indexPlayer;
+    for (int i = 0; i < (*newGame).numberOfPlayer; i++) {
+        if ((*newGame).allThePlayers[i]->name == (*nameChoice)) {
+            indexPlayer = i;
+        }
+    }
+    for (int i = 0; i < (*newGame).numberOfNPCs; i++) {
+        if ((*newGame).NPCs[i]->name == (*nameChoice)) {
+            indexPlayer = i+10;
+        }
+    }
+    return indexPlayer;
+}
+
+void movePlayerToRandomPosInARoom(Game *newGame, int indexPlayer, Player *playerToMove) {
+    int canGoInTheRoom, randomPositionIntoTheRoom;
+    do {
+        randomPositionIntoTheRoom = rand() % (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosLogSize;
+        canGoInTheRoom = 1;
+        for (int i = 0; i < (*newGame).numberOfPlayer; i++) {
+            if ((*newGame).allThePlayers[i]->playerPos.posX ==
+                (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX &&
+                (*newGame).allThePlayers[i]->playerPos.posY ==
+                (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY) {
+                canGoInTheRoom = 0;
+            }
+        }
+        for (int i = 0; i < (*newGame).numberOfNPCs; i++) {
+            if ((*newGame).NPCs[i]->playerPos.posX ==
+                (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX &&
+                (*newGame).NPCs[i]->playerPos.posY ==
+                (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY) {
+                canGoInTheRoom = 0;
+            }
+        }
+    } while (!canGoInTheRoom);
+    playerToMove->playerPos.posX = (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX;
+    playerToMove->playerPos.posY = (*newGame).allTheRooms[playerToMove->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY;
 }
 
 void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]) {
@@ -290,9 +406,7 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
     removeFromAnArray(allIndex, newGame->killer.weapons+5, 20);
     removeFromAnArray(allIndex, newGame->killer.room+10, 19);
 
-    printNameWithInt(newGame->killer.name);
-    printWeaponsWithInt(newGame->killer.weapons);
-    printRoomsWithInt(newGame->killer.room);
+    printf("The killer has been choosen...........");
     printf("\n");
 
 
