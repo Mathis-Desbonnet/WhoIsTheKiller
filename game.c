@@ -64,7 +64,7 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
             if (printPlayer) {
                 printf("X");
             } else {
-                if (map[i][j] == 2) {
+                if (map[i][j] == 2 || map[i][j]<0) {
                     SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                     printf("#");
                 }
@@ -162,18 +162,20 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     printMapAndPlayer((*player), map, newGame);
     while (diceNumber > 0) {
         resetMovementPossibilities(movePossibilities);
-        updateMovementPossibilities(movePossibilities, (*player).playerPos.posX, (*player).playerPos.posY, map);
+        if (player->roomIndexIn == -1) {
+            updateMovementPossibilities(movePossibilities, (*player).playerPos.posX, (*player).playerPos.posY, map);
+        }
         printPossibilities(movePossibilities);
-        if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
-            if ((*player).roomIndexIn == -1) {
-                printf("Enter the room -> 5\n");
-            } else {
-                printf("Exit the room -> 5\n");
-            }
+        if (player->roomIndexIn != -1) {
+            printf("Exit the room -> 5\n");
+        } else if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
+            printf("Enter the room -> 5\n");
         }
         printf("\n\n\n\n\n\n\n\n\n");
         scanf("%d", &choice);
         printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        int randomPositionIntoTheRoom;
+        int canGoInTheRoom = 1;
         switch (choice) {
             case 1:
                 if (movePossibilities[0] == 1) {
@@ -211,9 +213,30 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
                 if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13) {
                     if ((*player).roomIndexIn == -1) {
                         (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
-                    } else {
-                        (*player).roomIndexIn = -1;
+                        do {
+                            randomPositionIntoTheRoom = rand()%newGame.allTheRooms[player->roomIndexIn]->roomPosLogSize;
+                            canGoInTheRoom = 1;
+                            for (int i = 0; i<newGame.numberOfPlayer; i++) {
+                                if (newGame.allThePlayers[i]->playerPos.posX == newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX && newGame.allThePlayers[i]->playerPos.posX == newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY) {
+                                    canGoInTheRoom = 0;
+                                }
+                            }
+                        } while (!canGoInTheRoom);
+                        player->playerPos.posX = newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posX;
+                        player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->roomPosition[randomPositionIntoTheRoom].posY;
+                        diceNumber--;
                     }
+                } else if (player->roomIndexIn != -1) {
+                    for (int i = 0; i<newGame.allTheRooms[player->roomIndexIn]->numberOfDoors; i++) {
+                        printf("Exit %d : %d-%d\n", i+1, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posXOut, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posYOut);
+                    }
+                    do {
+                        printf("Choose your exit :");
+                        scanf("%d", &choice);
+                    } while (choice < 0 && choice >= newGame.allTheRooms[player->roomIndexIn]->numberOfDoors);
+                    player->playerPos.posX = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posXOut;
+                    player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posYOut;
+                    (*player).roomIndexIn = -1;
                     diceNumber--;
                 } else {
                     printf("MOVEMENT NOT POSSIBLE\n");
@@ -228,17 +251,92 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
     }
 }
 
-void createANewGame(const Position *startersPos, Game *newGame) {
+void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]) {
     int choice, error;
     char* allNames[6] = {"MOUTARDE", "OLIVE", "VIOLET", "PERVENCHE", "ROSE", "LEBLANC"};
     int allNamesIndex[6] = {0, 1, 2, 3, 4, 5};
-    (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 9);
+    (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 10);
     for (int i = 0; i<9; i++) {
         (*newGame).allTheRooms[i] = (Room*) malloc(sizeof(Room));
         (*newGame).allTheRooms[i]->name = i;
         (*newGame).allTheRooms[i]->secretWay = NULL;
         (*newGame).allTheRooms[i]->allDoors = NULL;
+        (*newGame).allTheRooms[i]->roomPosition = NULL;
+        (*newGame).allTheRooms[i]->roomPosLogSize = 0;
     }
+    int index;
+    //Append all position for all the rooms into their array
+    for (int i = 0; i<25; i++) {
+        for (int j = 0; j<24; j++) {
+            index = map[i][j];
+            if (index < 0) {
+                (*newGame).allTheRooms[index+10]->roomPosition = (Position*) realloc((*newGame).allTheRooms[index+10]->roomPosition, ((*newGame).allTheRooms[index+10]->roomPosLogSize+1)*
+                                                                                                                              sizeof(Position));
+                newGame->allTheRooms[index+10]->roomPosition[(*newGame).allTheRooms[index+10]->roomPosLogSize].posX = i;
+                newGame->allTheRooms[index+10]->roomPosition[(*newGame).allTheRooms[index+10]->roomPosLogSize].posY = j;
+                (*newGame).allTheRooms[index+10]->roomPosLogSize += 1;
+            }
+        }
+    }
+    //Create exit Doors
+    newGame->allTheRooms[HALL]->allDoors = (Doors*) malloc(sizeof(Doors)*2);
+    newGame->allTheRooms[HALL]->numberOfDoors = 2;
+    newGame->allTheRooms[HALL]->allDoors[0].posXOut = 7;
+    newGame->allTheRooms[HALL]->allDoors[0].posYOut = 11;
+    newGame->allTheRooms[HALL]->allDoors[1].posXOut = 7;
+    newGame->allTheRooms[HALL]->allDoors[1].posYOut = 12;
+
+    newGame->allTheRooms[BAR]->allDoors = (Doors*) malloc(sizeof(Doors));
+    newGame->allTheRooms[BAR]->numberOfDoors = 1;
+    newGame->allTheRooms[BAR]->allDoors[0].posXOut = 6;
+    newGame->allTheRooms[BAR]->allDoors[0].posYOut = 17;
+
+    newGame->allTheRooms[SALLE_A_MANGER]->allDoors = (Doors*) malloc(sizeof(Doors)*2);
+    newGame->allTheRooms[SALLE_A_MANGER]->numberOfDoors = 2;
+    newGame->allTheRooms[SALLE_A_MANGER]->allDoors[0].posXOut = 8;
+    newGame->allTheRooms[SALLE_A_MANGER]->allDoors[0].posYOut = 17;
+    newGame->allTheRooms[SALLE_A_MANGER]->allDoors[1].posXOut = 12;
+    newGame->allTheRooms[SALLE_A_MANGER]->allDoors[1].posYOut = 15;
+
+    newGame->allTheRooms[CUISINE]->allDoors = (Doors*) malloc(sizeof(Doors));
+    newGame->allTheRooms[CUISINE]->numberOfDoors = 1;
+    newGame->allTheRooms[CUISINE]->allDoors[0].posXOut = 17;
+    newGame->allTheRooms[CUISINE]->allDoors[0].posYOut = 19;
+
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors = (Doors*) malloc(sizeof(Doors)*4);
+    newGame->allTheRooms[SALLE_DE_BALLE]->numberOfDoors = 4;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[0].posXOut = 19;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[0].posYOut = 7;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[1].posXOut = 16;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[1].posYOut = 9;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[2].posXOut = 16;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[2].posYOut = 14;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[3].posXOut = 19;
+    newGame->allTheRooms[SALLE_DE_BALLE]->allDoors[3].posYOut = 16;
+
+    newGame->allTheRooms[CONSERVATOIRE]->allDoors = (Doors*) malloc(sizeof(Doors));
+    newGame->allTheRooms[CONSERVATOIRE]->numberOfDoors = 1;
+    newGame->allTheRooms[CONSERVATOIRE]->allDoors[0].posXOut = 19;
+    newGame->allTheRooms[CONSERVATOIRE]->allDoors[0].posYOut = 5;
+
+    newGame->allTheRooms[BILLIARD]->allDoors = (Doors*) malloc(sizeof(Doors)*2);
+    newGame->allTheRooms[BILLIARD]->numberOfDoors = 2;
+    newGame->allTheRooms[BILLIARD]->allDoors[0].posXOut = 15;
+    newGame->allTheRooms[BILLIARD]->allDoors[0].posYOut = 6;
+    newGame->allTheRooms[BILLIARD]->allDoors[1].posXOut = 11;
+    newGame->allTheRooms[BILLIARD]->allDoors[1].posYOut = 1;
+
+    newGame->allTheRooms[BIBLIOTHEQUE]->allDoors = (Doors*) malloc(sizeof(Doors)*2);
+    newGame->allTheRooms[BIBLIOTHEQUE]->numberOfDoors = 2;
+    newGame->allTheRooms[BIBLIOTHEQUE]->allDoors[0].posXOut = 11;
+    newGame->allTheRooms[BIBLIOTHEQUE]->allDoors[0].posYOut = 3;
+    newGame->allTheRooms[BIBLIOTHEQUE]->allDoors[1].posXOut = 8;
+    newGame->allTheRooms[BIBLIOTHEQUE]->allDoors[1].posYOut = 7;
+
+    newGame->allTheRooms[BUREAU]->allDoors = (Doors*) malloc(sizeof(Doors));
+    newGame->allTheRooms[BUREAU]->numberOfDoors = 1;
+    newGame->allTheRooms[BUREAU]->allDoors[0].posXOut = 4;
+    newGame->allTheRooms[BUREAU]->allDoors[0].posYOut = 5;
     printf("Choose number of player :");
     scanf("%d", &choice);
     (*newGame).numberOfPlayer = choice;
