@@ -36,6 +36,7 @@ typedef struct {
     SecretWay* secretWay;
     Position* roomPosition;
     int roomPosLogSize;
+    int numberOfDoors;
 } Room;
 
 typedef enum {
