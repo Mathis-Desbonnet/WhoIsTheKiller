@@ -337,6 +337,102 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
     newGame->allTheRooms[BUREAU]->numberOfDoors = 1;
     newGame->allTheRooms[BUREAU]->allDoors[0].posXOut = 4;
     newGame->allTheRooms[BUREAU]->allDoors[0].posYOut = 5;
+
+    //Creation of the killer
+
+    int allIndex[21] = {0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28};
+
+    newGame->killer.name = rand()%6;
+    newGame->killer.weapons = rand()%6;
+    newGame->killer.room = rand()%9;
+    for (int i = newGame->killer.name; i<20; i++) {
+        allIndex[i] = allIndex[i+1];
+    }
+    for (int i = newGame->killer.weapons+5; i<19; i++) {
+        allIndex[i] = allIndex[i+1];
+    }
+    for (int i = newGame->killer.room+10; i<18; i++) {
+        allIndex[i] = allIndex[i+1];
+    }
+    switch (newGame->killer.name) {
+        case 0 :
+            printf("Moutarde\t");
+            break;
+        case 1 :
+            printf("Olive\t");
+            break;
+        case 2 :
+            printf("Violet\t");
+            break;
+        case 3 :
+            printf("Pervenche\t");
+            break;
+        case 4 :
+            printf("Rose\t");
+            break;
+        case 5 :
+            printf("Leblanc\t");
+            break;
+        default : printf("PROBLEMMMEE"); break;
+    }
+    switch (newGame->killer.weapons) {
+        case 0 :
+            printf("POIGNARD\t");
+            break;
+        case 1 :
+            printf("CHANDELIER\t");
+            break;
+        case 2 :
+            printf("REVOLVER\t");
+            break;
+        case 3 :
+            printf("CORDE\t");
+            break;
+        case 4 :
+            printf("BARRE_DE_FER\t");
+            break;
+        case 5 :
+            printf("CLE_A_MOLETTE\t");
+            break;
+        default : printf("PROBLEMMMEE"); break;
+    }
+    switch (newGame->killer.room) {
+        case 0 :
+            printf("HALL\t");
+            break;
+        case 1 :
+            printf("BAR\t");
+            break;
+        case 2 :
+            printf("SALLE_A_MANGER\t");
+            break;
+        case 3 :
+            printf("CUISINE\t");
+            break;
+        case 4 :
+            printf("SALLE_DE_BALLE\t");
+            break;
+        case 5 :
+            printf("CONSERVATOIRE\t");
+            break;
+        case 6 :
+            printf("BILLIARD\t");
+            break;
+        case 7 :
+            printf("BIBLIOTHEQUE\t");
+            break;
+        case 8 :
+            printf("BUREAU\t");
+            break;
+        default : printf("PROBLEMMMEE"); break;
+    }
+    printf("\n");
+
+
+
+    int indexPlayerGettingCard = 0;
+
+    //Creation of the player + NPCs
     printf("Choose number of player :");
     scanf("%d", &choice);
     (*newGame).numberOfPlayer = choice;
@@ -362,6 +458,9 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
         (*newGame).allThePlayers[i]->playerPos.posX = startersPos[choice].posX;
         (*newGame).allThePlayers[i]->playerPos.posY = startersPos[choice].posY;
         (*newGame).allThePlayers[i]->roomIndexIn = -1;
+        (*newGame).allThePlayers[i]->Card = (Card*) malloc(sizeof(Card));
+        (*newGame).allThePlayers[i]->Card->playerCards = NULL;
+        (*newGame).allThePlayers[i]->Card->numberOfCard = 0;
     }
     int isAPlayer;
     newGame->numberOfNPCs = 6 - newGame->numberOfPlayer;
@@ -383,5 +482,100 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
             (*newGame).NPCs[indexOfNPCs]->playerPos.posY = startersPos[i].posY;
             indexOfNPCs++;
         }
+    }
+    int random;
+    for (int i = 0; i<18; i++) {
+        newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards = (int*) realloc(newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards,
+                                                                                           sizeof(int)*(newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard+1));
+        random = rand()%(18-i);
+        newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards[newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard] = allIndex[random];
+        for (int j = random; j<17-i; j++) {
+            allIndex[j] = allIndex[j+1];
+        }
+        newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard += 1;
+        indexPlayerGettingCard++;
+        indexPlayerGettingCard = indexPlayerGettingCard%(newGame->numberOfPlayer);
+    }
+    for (int i = 0; i<newGame->numberOfPlayer; i++) {
+        printf("Card of player %d : ", i+1);
+        for (int j = 0; j<newGame->allThePlayers[i]->Card->numberOfCard; j++) {
+            if (newGame->allThePlayers[i]->Card->playerCards[j] < 10) {
+                switch (newGame->allThePlayers[i]->Card->playerCards[j]) {
+                    case 0 :
+                        printf("Moutarde\t");
+                        break;
+                    case 1 :
+                        printf("Olive\t");
+                        break;
+                    case 2 :
+                        printf("Violet\t");
+                        break;
+                    case 3 :
+                        printf("Pervenche\t");
+                        break;
+                    case 4 :
+                        printf("Rose\t");
+                        break;
+                    case 5 :
+                        printf("Leblanc\t");
+                        break;
+                    default : printf("PROBLEMMMEE"); break;
+                }
+            } else if (newGame->allThePlayers[i]->Card->playerCards[j] < 20) {
+                switch (newGame->allThePlayers[i]->Card->playerCards[j]-10) {
+                    case 0 :
+                        printf("POIGNARD\t");
+                        break;
+                    case 1 :
+                        printf("CHANDELIER\t");
+                        break;
+                    case 2 :
+                        printf("REVOLVER\t");
+                        break;
+                    case 3 :
+                        printf("CORDE\t");
+                        break;
+                    case 4 :
+                        printf("BARRE_DE_FER\t");
+                        break;
+                    case 5 :
+                        printf("CLE_A_MOLETTE\t");
+                        break;
+                    default : printf("PROBLEMMMEE"); break;
+                }
+            } else {
+                switch (newGame->allThePlayers[i]->Card->playerCards[j]-20) {
+                    case 0 :
+                        printf("HALL\t");
+                        break;
+                    case 1 :
+                        printf("BAR\t");
+                        break;
+                    case 2 :
+                        printf("SALLE_A_MANGER\t");
+                        break;
+                    case 3 :
+                        printf("CUISINE\t");
+                        break;
+                    case 4 :
+                        printf("SALLE_DE_BALLE\t");
+                        break;
+                    case 5 :
+                        printf("CONSERVATOIRE\t");
+                        break;
+                    case 6 :
+                        printf("BILLIARD\t");
+                        break;
+                    case 7 :
+                        printf("BIBLIOTHEQUE\t");
+                        break;
+                    case 8 :
+                        printf("BUREAU\t");
+                        break;
+                    default : printf("PROBLEMMMEE"); break;
+                }
+            }
+        }
+        printf("\n");
     }
 }
