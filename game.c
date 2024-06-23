@@ -4,6 +4,8 @@
 
 #include "game.h"
 
+void createRooms(const Game *newGame, int i);
+
 void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     int printPlayer;
@@ -252,17 +254,12 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
 }
 
 void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]) {
-    int choice, error;
-    char* allNames[6] = {"MOUTARDE", "OLIVE", "VIOLET", "PERVENCHE", "ROSE", "LEBLANC"};
-    int allNamesIndex[6] = {0, 1, 2, 3, 4, 5};
+    int choice;
+
+    //Create all rooms
     (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 10);
     for (int i = 0; i<9; i++) {
-        (*newGame).allTheRooms[i] = (Room*) malloc(sizeof(Room));
-        (*newGame).allTheRooms[i]->name = i;
-        (*newGame).allTheRooms[i]->secretWay = NULL;
-        (*newGame).allTheRooms[i]->allDoors = NULL;
-        (*newGame).allTheRooms[i]->roomPosition = NULL;
-        (*newGame).allTheRooms[i]->roomPosLogSize = 0;
+        createRooms(newGame, i);
     }
     int index;
     //Append all position for all the rooms into their array
@@ -279,7 +276,153 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
         }
     }
     //Create exit Doors
-    newGame->allTheRooms[HALL]->allDoors = (Doors*) malloc(sizeof(Doors)*2);
+    createRoomsExitDoor(newGame);
+
+    //Creation of the killer
+
+    int allIndex[21] = {0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28};
+
+    newGame->killer.name = rand()%6;
+    newGame->killer.weapons = rand()%6;
+    newGame->killer.room = rand()%9;
+
+    removeFromAnArray(allIndex, newGame->killer.name, 21);
+    removeFromAnArray(allIndex, newGame->killer.weapons+5, 20);
+    removeFromAnArray(allIndex, newGame->killer.room+10, 19);
+
+    printNameWithInt(newGame->killer.name);
+    printWeaponsWithInt(newGame->killer.weapons);
+    printRoomsWithInt(newGame->killer.room);
+    printf("\n");
+
+
+    int indexPlayerGettingCard = 0;
+
+    //Creation of players
+    printf("Choose number of player :");
+    scanf("%d", &choice);
+    (*newGame).numberOfPlayer = choice;
+    (*newGame).allThePlayers = (Player**) malloc(sizeof(Player*) * newGame->numberOfPlayer);
+    for (int i = 0; i < (*newGame).numberOfPlayer; i++) {
+        choice = chooseAPlayer(i);
+        //Init the player
+        (*newGame).allThePlayers[i] = (Player*) malloc(sizeof(Player));
+        initPlayer(newGame->allThePlayers[i], choice, startersPos[choice].posX, startersPos[choice].posY);
+    }
+
+    //Create NPCs
+    int isAPlayer;
+    newGame->numberOfNPCs = 6 - newGame->numberOfPlayer;
+    newGame->NPCs = (Player**) malloc(sizeof(Player*)*newGame->numberOfNPCs);
+    int indexOfNPCs = 0;
+    for (int i = 0; i<6; i++) {
+        //Search if the character is a player
+        isAPlayer = 0;
+        for (int j = 0; j<newGame->numberOfPlayer; j++) {
+            if (newGame->allThePlayers[j]->name == i) {
+                isAPlayer = 1;
+            }
+        }
+        //If not, adding him to the NPCs array
+        if (!isAPlayer) {
+            newGame->NPCs[indexOfNPCs] = (Player*) malloc(sizeof(Player));
+            newGame->NPCs[indexOfNPCs]->name = i;
+            (*newGame).NPCs[indexOfNPCs]->playerPos.posX = startersPos[i].posX;
+            (*newGame).NPCs[indexOfNPCs]->playerPos.posY = startersPos[i].posY;
+            indexOfNPCs++;
+        }
+    }
+
+    //Add Card for players
+    int random;
+    for (int i = 0; i<18; i++) {
+        newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards = (int*) realloc(newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards,
+                                                                                           sizeof(int)*(newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard+1));
+        random = rand()%(18-i);
+        newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards[newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard] = allIndex[random];
+        for (int j = random; j<17-i; j++) {
+            allIndex[j] = allIndex[j+1];
+        }
+        newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard += 1;
+        indexPlayerGettingCard++;
+        indexPlayerGettingCard = indexPlayerGettingCard%(newGame->numberOfPlayer);
+    }
+
+    //Print Card
+    for (int i = 0; i<newGame->numberOfPlayer; i++) {
+        printf("PLAYER %d, please look at your card, write them down, then enter to go to the other player !\n", i+1);
+        printf("Enter something to continue :");
+        scanf("%d", &choice);
+        printf("\n\n\n\n");
+        printf("Card of player %d : ", i+1);
+        printCardForAPlayer(newGame->allThePlayers[i]);
+        printf("\n\n\n\n");
+        printf("\nEnter something to continue :");
+        scanf("%d", &choice);
+        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    }
+}
+
+void createRooms(const Game *newGame, int i) {
+    (*newGame).allTheRooms[i] = (Room*) malloc(sizeof(Room));
+    (*newGame).allTheRooms[i]->name = i;
+    (*newGame).allTheRooms[i]->secretWay = NULL;
+    (*newGame).allTheRooms[i]->allDoors = NULL;
+    (*newGame).allTheRooms[i]->roomPosition = NULL;
+    (*newGame).allTheRooms[i]->roomPosLogSize = 0;
+}
+
+int chooseAPlayer(int index) {
+    int error, choice;
+    char* allNames[6] = {"MOUTARDE", "OLIVE", "VIOLET", "PERVENCHE", "ROSE", "LEBLANC"};
+    int allNamesIndex[6] = {0, 1, 2, 3, 4, 5};
+    do {
+        printf("Choose your player :\n");
+        //List of all the characters available
+        for (int j = 0; j<6-index; j++) {
+            printf("%d -> %s\n", allNamesIndex[j], allNames[allNamesIndex[j]]);
+        }
+        error = scanf("%d", &choice);
+    } while (choice < 0 || choice > 6 || error == 0);
+    //Delete index of names for the listing
+    for (int j = 0; j<6-index-1; j++) {
+        if (allNamesIndex[j] >= choice) {
+            allNamesIndex[j] = allNamesIndex[j+1];
+        }
+    }
+    return choice;
+}
+
+void initPlayer(Player* player, int choice, int posX, int posY) {
+    player->name = choice;
+    player->playerPos.posX = posX;
+    player->playerPos.posY = posY;
+    player->roomIndexIn = -1;
+    player->Card = (Card*) malloc(sizeof(Card));
+    player->Card->playerCards = NULL;
+    player->Card->numberOfCard = 0;
+}
+
+void removeFromAnArray(int* indexArray, int startingPos, int length) {
+    for (int i = startingPos; i<length-1; i++) {
+        indexArray[i] = indexArray[i+1];
+    }
+}
+
+void printCardForAPlayer(const Player *player) {
+    for (int j = 0; j < player->Card->numberOfCard; j++) {
+        if (player->Card->playerCards[j] < 10) {
+            printNameWithInt(player->Card->playerCards[j]);
+        } else if (player->Card->playerCards[j] < 20) {
+            printWeaponsWithInt(player->Card->playerCards[j]-10);
+        } else {
+            printRoomsWithInt(player->Card->playerCards[j]-20);
+        }
+    }
+}
+
+void createRoomsExitDoor(const Game *newGame) {
+    newGame->allTheRooms[HALL]->allDoors = (Doors*) malloc(sizeof(Doors) * 2);
     newGame->allTheRooms[HALL]->numberOfDoors = 2;
     newGame->allTheRooms[HALL]->allDoors[0].posXOut = 7;
     newGame->allTheRooms[HALL]->allDoors[0].posYOut = 11;
@@ -337,24 +480,10 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
     newGame->allTheRooms[BUREAU]->numberOfDoors = 1;
     newGame->allTheRooms[BUREAU]->allDoors[0].posXOut = 4;
     newGame->allTheRooms[BUREAU]->allDoors[0].posYOut = 5;
+}
 
-    //Creation of the killer
-
-    int allIndex[21] = {0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28};
-
-    newGame->killer.name = rand()%6;
-    newGame->killer.weapons = rand()%6;
-    newGame->killer.room = rand()%9;
-    for (int i = newGame->killer.name; i<20; i++) {
-        allIndex[i] = allIndex[i+1];
-    }
-    for (int i = newGame->killer.weapons+5; i<19; i++) {
-        allIndex[i] = allIndex[i+1];
-    }
-    for (int i = newGame->killer.room+10; i<18; i++) {
-        allIndex[i] = allIndex[i+1];
-    }
-    switch (newGame->killer.name) {
+void printNameWithInt(CharactersName name) {
+    switch (name) {
         case 0 :
             printf("Moutarde\t");
             break;
@@ -375,7 +504,10 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
             break;
         default : printf("PROBLEMMMEE"); break;
     }
-    switch (newGame->killer.weapons) {
+}
+
+void printWeaponsWithInt(Weapons weaponsName) {
+    switch (weaponsName) {
         case 0 :
             printf("POIGNARD\t");
             break;
@@ -396,7 +528,10 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
             break;
         default : printf("PROBLEMMMEE"); break;
     }
-    switch (newGame->killer.room) {
+}
+
+void printRoomsWithInt(RoomsName roomsName) {
+    switch (roomsName) {
         case 0 :
             printf("HALL\t");
             break;
@@ -425,157 +560,5 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
             printf("BUREAU\t");
             break;
         default : printf("PROBLEMMMEE"); break;
-    }
-    printf("\n");
-
-
-
-    int indexPlayerGettingCard = 0;
-
-    //Creation of the player + NPCs
-    printf("Choose number of player :");
-    scanf("%d", &choice);
-    (*newGame).numberOfPlayer = choice;
-    (*newGame).allThePlayers = (Player**) malloc(sizeof(Player*) * newGame->numberOfPlayer);
-    for (int i = 0; i < (*newGame).numberOfPlayer; i++) {
-        (*newGame).allThePlayers[i] = (Player*) malloc(sizeof(Player));
-        do {
-            printf("Choose your player :\n");
-            //List of all the characters available
-            for (int j = 0; j<6-i; j++) {
-                printf("%d -> %s\n", allNamesIndex[j], allNames[allNamesIndex[j]]);
-            }
-            error = scanf("%d", &choice);
-        } while (choice < 0 || choice > 6 || error == 0);
-        //Delete index of names for the listing
-        for (int j = 0; j<6-i-1; j++) {
-            if (allNamesIndex[j] >= choice) {
-                allNamesIndex[j] = allNamesIndex[j+1];
-            }
-        }
-        //Init the player
-        (*newGame).allThePlayers[i]->name = choice;
-        (*newGame).allThePlayers[i]->playerPos.posX = startersPos[choice].posX;
-        (*newGame).allThePlayers[i]->playerPos.posY = startersPos[choice].posY;
-        (*newGame).allThePlayers[i]->roomIndexIn = -1;
-        (*newGame).allThePlayers[i]->Card = (Card*) malloc(sizeof(Card));
-        (*newGame).allThePlayers[i]->Card->playerCards = NULL;
-        (*newGame).allThePlayers[i]->Card->numberOfCard = 0;
-    }
-    int isAPlayer;
-    newGame->numberOfNPCs = 6 - newGame->numberOfPlayer;
-    newGame->NPCs = (Player**) malloc(sizeof(Player*)*newGame->numberOfNPCs);
-    int indexOfNPCs = 0;
-    for (int i = 0; i<6; i++) {
-        //Search if the character is a player
-        isAPlayer = 0;
-        for (int j = 0; j<newGame->numberOfPlayer; j++) {
-            if (newGame->allThePlayers[j]->name == i) {
-                isAPlayer = 1;
-            }
-        }
-        //If not, adding him to the NPCs array
-        if (!isAPlayer) {
-            newGame->NPCs[indexOfNPCs] = (Player*) malloc(sizeof(Player));
-            newGame->NPCs[indexOfNPCs]->name = i;
-            (*newGame).NPCs[indexOfNPCs]->playerPos.posX = startersPos[i].posX;
-            (*newGame).NPCs[indexOfNPCs]->playerPos.posY = startersPos[i].posY;
-            indexOfNPCs++;
-        }
-    }
-    int random;
-    for (int i = 0; i<18; i++) {
-        newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards = (int*) realloc(newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards,
-                                                                                           sizeof(int)*(newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard+1));
-        random = rand()%(18-i);
-        newGame->allThePlayers[indexPlayerGettingCard]->Card->playerCards[newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard] = allIndex[random];
-        for (int j = random; j<17-i; j++) {
-            allIndex[j] = allIndex[j+1];
-        }
-        newGame->allThePlayers[indexPlayerGettingCard]->Card->numberOfCard += 1;
-        indexPlayerGettingCard++;
-        indexPlayerGettingCard = indexPlayerGettingCard%(newGame->numberOfPlayer);
-    }
-    for (int i = 0; i<newGame->numberOfPlayer; i++) {
-        printf("Card of player %d : ", i+1);
-        for (int j = 0; j<newGame->allThePlayers[i]->Card->numberOfCard; j++) {
-            if (newGame->allThePlayers[i]->Card->playerCards[j] < 10) {
-                switch (newGame->allThePlayers[i]->Card->playerCards[j]) {
-                    case 0 :
-                        printf("Moutarde\t");
-                        break;
-                    case 1 :
-                        printf("Olive\t");
-                        break;
-                    case 2 :
-                        printf("Violet\t");
-                        break;
-                    case 3 :
-                        printf("Pervenche\t");
-                        break;
-                    case 4 :
-                        printf("Rose\t");
-                        break;
-                    case 5 :
-                        printf("Leblanc\t");
-                        break;
-                    default : printf("PROBLEMMMEE"); break;
-                }
-            } else if (newGame->allThePlayers[i]->Card->playerCards[j] < 20) {
-                switch (newGame->allThePlayers[i]->Card->playerCards[j]-10) {
-                    case 0 :
-                        printf("POIGNARD\t");
-                        break;
-                    case 1 :
-                        printf("CHANDELIER\t");
-                        break;
-                    case 2 :
-                        printf("REVOLVER\t");
-                        break;
-                    case 3 :
-                        printf("CORDE\t");
-                        break;
-                    case 4 :
-                        printf("BARRE_DE_FER\t");
-                        break;
-                    case 5 :
-                        printf("CLE_A_MOLETTE\t");
-                        break;
-                    default : printf("PROBLEMMMEE"); break;
-                }
-            } else {
-                switch (newGame->allThePlayers[i]->Card->playerCards[j]-20) {
-                    case 0 :
-                        printf("HALL\t");
-                        break;
-                    case 1 :
-                        printf("BAR\t");
-                        break;
-                    case 2 :
-                        printf("SALLE_A_MANGER\t");
-                        break;
-                    case 3 :
-                        printf("CUISINE\t");
-                        break;
-                    case 4 :
-                        printf("SALLE_DE_BALLE\t");
-                        break;
-                    case 5 :
-                        printf("CONSERVATOIRE\t");
-                        break;
-                    case 6 :
-                        printf("BILLIARD\t");
-                        break;
-                    case 7 :
-                        printf("BIBLIOTHEQUE\t");
-                        break;
-                    case 8 :
-                        printf("BUREAU\t");
-                        break;
-                    default : printf("PROBLEMMMEE"); break;
-                }
-            }
-        }
-        printf("\n");
     }
 }

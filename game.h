@@ -28,5 +28,13 @@ int rollTheDice();
 
 void playerMovement(Player *player, int map[25][24], Game newGame);
 void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]);
+void removeFromAnArray(int* indexArray, int startingPos, int length);
+void initPlayer(Player* player, int choice, int posX, int posY);
+void createRoomsExitDoor(const Game *newGame);
+void printCardForAPlayer(const Player *player);
 
+int chooseAPlayer(int index);
+void printNameWithInt(CharactersName name);
+void printWeaponsWithInt(Weapons weaponsName);
+void printRoomsWithInt(RoomsName roomsName);
 #endif //CLUEDO_GAME_H
