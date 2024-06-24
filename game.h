@@ -37,4 +37,11 @@ int chooseAPlayer(int index);
 void printNameWithInt(CharactersName name);
 void printWeaponsWithInt(Weapons weaponsName);
 void printRoomsWithInt(RoomsName roomsName);
+
+void createRooms(const Game *newGame, int i);
+void movePlayerToRandomPosInARoom(Game *newGame, int indexPlayer, Player *playerToMove);
+
+int getIndexByName(Game *newGame, CharactersName *nameChoice);
+void ChoosePlayerAndWeapon(CharactersName *nameChoice, Weapons *weaponChoice);
+
 #endif //CLUEDO_GAME_H
