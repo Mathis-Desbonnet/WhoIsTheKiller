@@ -195,8 +195,8 @@ void playerMovement(Player *player, int map[25][24], Game newGame, SDL_Renderer*
         SDL_Log("If you want to accuse someone -> 7\n");
         SDL_Log("\n\n\n\n\n\n\n\n\n");
         int hasChoose = 0;
-        SDL_Event newEvent;
         while (!hasChoose) {
+            SDL_Event newEvent;
             SDL_PollEvent(&newEvent);
             switch (newEvent.type) {
                 case SDL_KEYDOWN:
@@ -340,6 +340,7 @@ void playerMovement(Player *player, int map[25][24], Game newGame, SDL_Renderer*
                             break;
                     }
             }
+            SDL_FlushEvent(newEvent.type);
             SDL_Delay(100);
         }
         SDL_Log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -538,7 +539,7 @@ char *getInputStringFromPlayer() {
     SDL_CreateWindowAndRenderer(960, 1000, SDL_WINDOW_SHOWN, &window, &renderer);
     SDL_RenderSetVSync(renderer, 60);
     SDL_Event newEvent;
-    char *text = (char*) malloc(sizeof(char)*50);
+    char *text = (char*) calloc(50, sizeof(char));
     TTF_Font* font = TTF_OpenFont("Roboto-Bold.ttf", 100);
     SDL_Color color = {255, 255, 30, 255};
     SDL_Surface* temp = TTF_RenderText_Solid(font, " ", color);
