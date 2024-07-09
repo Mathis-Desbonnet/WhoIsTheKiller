@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 #ifndef CLUEDO_GAME_H
 #define CLUEDO_GAME_H
@@ -20,13 +22,13 @@ typedef struct {
     int numberOfNPCs;
 } Game;
 
-void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame);
+void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame, SDL_Renderer* renderer);
 void resetMovementPossibilities(int moveArray[4]);
 void updateMovementPossibilities(int moveArray[4], int i, int j, int map[25][24]);
 void printPossibilities(int moveArray[4]);
 int rollTheDice();
 
-void playerMovement(Player *player, int map[25][24], Game newGame);
+void playerMovement(Player *player, int map[25][24], Game newGame, SDL_Renderer* renderer);
 void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]);
 void removeFromAnArray(int* indexArray, int startingPos, int length);
 void initPlayer(Player* player, int choice, int posX, int posY);
@@ -43,5 +45,7 @@ void movePlayerToRandomPosInARoom(Game *newGame, int indexPlayer, Player *player
 
 int getIndexByName(Game *newGame, CharactersName *nameChoice);
 void ChoosePlayerAndWeapon(CharactersName *nameChoice, Weapons *weaponChoice);
+
+char *getInputStringFromPlayer();
 
 #endif //CLUEDO_GAME_H

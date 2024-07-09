@@ -4,8 +4,11 @@
 
 #include "game.h"
 
-void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
+void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame, SDL_Renderer* renderer) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SDL_Rect tempRect;
+    tempRect.w = 40;
+    tempRect.h = 40;
     int printPlayer;
     for (int i = 0; i < 25; i++) {
         for (int j = 0; j < 24; j++) {
@@ -13,23 +16,28 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
             for (int k = 0; k < newGame.numberOfPlayer; k++) {
                 if (newGame.allThePlayers[k]->playerPos.posX == i && newGame.allThePlayers[k]->playerPos.posY == j) {
                     switch (newGame.allThePlayers[k]->name) {
-
                         case MOUTARDE:
+                            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                             break;
                         case OLIVE:
+                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
                             break;
                         case VIOLET:
+                            SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
                             break;
                         case PERVENCHE:
+                            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
                             break;
                         case ROSE:
+                            SDL_SetRenderDrawColor(renderer, 255, 125, 125, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
                             break;
                         case LEBLANC:
+                            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                             break;
                     }
@@ -40,48 +48,55 @@ void printMapAndPlayer(Player firstPlayer, int map[25][24], Game newGame) {
                 if (newGame.NPCs[k]->playerPos.posX == i && newGame.NPCs[k]->playerPos.posY == j) {
                     switch (newGame.NPCs[k]->name) {
                         case MOUTARDE:
+                            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
                             break;
                         case OLIVE:
+                            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
                             break;
                         case VIOLET:
+                            SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
                             break;
                         case PERVENCHE:
+                            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
                             break;
                         case ROSE:
+                            SDL_SetRenderDrawColor(renderer, 255, 125, 125, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
                             break;
                         case LEBLANC:
+                            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                             break;
                     }
                     printPlayer = 1;
                 }
             }
+            tempRect.x = j*40;
+            tempRect.y = i*40;
             if (printPlayer) {
-                printf("X");
             } else {
                 if (map[i][j] == 2 || map[i][j]<0) {
+                    SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
                     SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                    printf("#");
                 }
                 if (map[i][j] == 1) {
+                    SDL_SetRenderDrawColor(renderer, 255, 125, 255, 255);
                     SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-                    printf("0");
                 }
                 if (map[i][j] == 0) {
-                    printf(" ");
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 }
                 if (map[i][j] >= 3) {
+                    SDL_SetRenderDrawColor(renderer, 125, 255, 125, 255);
                     SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY);
-                    printf("|");
                 }
             }
+            SDL_RenderFillRect(renderer, &tempRect);
         }
-        printf("\n");
         switch (firstPlayer.name) {
             case MOUTARDE:
                 SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
@@ -135,18 +150,18 @@ void updateMovementPossibilities(int moveArray[4], int i, int j, int map[25][24]
 }
 
 void printPossibilities(int moveArray[4]) {
-    printf("Choose your next movement :\n");
+    SDL_Log("Choose your next movement :\n");
     if (moveArray[0] == 1) {
-        printf("You can go UP -> 1\n");
+        SDL_Log("You can go UP -> 1\n");
     }
     if (moveArray[1] == 1) {
-        printf("You can go RIGHT -> 2\n");
+        SDL_Log("You can go RIGHT -> 2\n");
     }
     if (moveArray[2] == 1) {
-        printf("You can go DOWN -> 3\n");
+        SDL_Log("You can go DOWN -> 3\n");
     }
     if (moveArray[3] == 1) {
-        printf("You can go LEFT -> 4\n");
+        SDL_Log("You can go LEFT -> 4\n");
     }
 }
 
@@ -154,16 +169,17 @@ int rollTheDice() {
     return rand()%11 + 1;
 }
 
-void playerMovement(Player *player, int map[25][24], Game newGame) {
+void playerMovement(Player *player, int map[25][24], Game newGame, SDL_Renderer* renderer) {
     int diceNumber = rollTheDice();
     int choice;
     int movePossibilities[4];
     int indexPlayer;
+    char* choiceText;
     CharactersName nameChoice;
     Weapons weaponChoice;
     RoomsName roomChoice;
-    printf("Movement Left : %d\n", diceNumber);
-    printMapAndPlayer((*player), map, newGame);
+    SDL_Log("Movement Left : %d\n", diceNumber);
+    //printMapAndPlayer((*player), map, newGame);
     while (diceNumber > 0) {
         resetMovementPossibilities(movePossibilities);
         if (player->roomIndexIn == -1) {
@@ -171,161 +187,191 @@ void playerMovement(Player *player, int map[25][24], Game newGame) {
         }
         printPossibilities(movePossibilities);
         if (player->roomIndexIn != -1) {
-            printf("Exit the room -> 5\n");
+            SDL_Log("Exit the room -> 5\n");
         } else if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 3) {
-            printf("Enter the room -> 5\n");
+            SDL_Log("Enter the room -> 5\n");
         }
-        printf("Finish/Skip your turn -> 6\n");
-        printf("If you want to accuse someone -> 7\n");
-        printf("\n\n\n\n\n\n\n\n\n");
-        scanf("%d", &choice);
-        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-        int randomPositionIntoTheRoom;
-        int canGoInTheRoom = 1;
-        switch (choice) {
-            case 1:
-                if (movePossibilities[0] == 1) {
-                    (*player).playerPos.posX -= 1;
-                    diceNumber--;
-                } else {
-                    printf("MOVEMENT NOT POSSIBLE\n");
-                }
-                break;
-            case 2:
-                if (movePossibilities[1] == 1) {
-                    (*player).playerPos.posY += 1;
-                    diceNumber--;
-                } else {
-                    printf("MOVEMENT NOT POSSIBLE\n");
-                }
-                break;
-            case 3:
-                if (movePossibilities[2] == 1) {
-                    (*player).playerPos.posX += 1;
-                    diceNumber--;
-                } else {
-                    printf("MOVEMENT NOT POSSIBLE\n");
-                }
-                break;
-            case 4:
-                if (movePossibilities[3] == 1) {
-                    (*player).playerPos.posY -= 1;
-                    diceNumber--;
-                } else {
-                    printf("MOVEMENT NOT POSSIBLE\n");
-                }
-                break;
-            case 5:
-                // If not in a room, but on a door
-                if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13 && (*player).roomIndexIn == -1) {
-                    (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
+        SDL_Log("Finish/Skip your turn -> 6\n");
+        SDL_Log("If you want to accuse someone -> 7\n");
+        SDL_Log("\n\n\n\n\n\n\n\n\n");
+        int hasChoose = 0;
+        SDL_Event newEvent;
+        while (!hasChoose) {
+            SDL_PollEvent(&newEvent);
+            switch (newEvent.type) {
+                case SDL_KEYDOWN:
+                    switch (newEvent.key.keysym.sym) {
+                        case SDLK_UP:
+                            if (movePossibilities[0] == 1) {
+                                (*player).playerPos.posX -= 1;
+                                hasChoose = 1;
+                                diceNumber--;
+                            } else {
+                                SDL_Log("MOVEMENT NOT POSSIBLE\n");
+                            }
+                            break;
+                        case SDLK_RIGHT:
+                            if (movePossibilities[1] == 1) {
+                                (*player).playerPos.posY += 1;
+                                hasChoose = 1;
+                                diceNumber--;
+                            } else {
+                                SDL_Log("MOVEMENT NOT POSSIBLE\n");
+                            }
+                            break;
+                        case SDLK_DOWN:
+                            if (movePossibilities[2] == 1) {
+                                (*player).playerPos.posX += 1;
+                                hasChoose = 1;
+                                diceNumber--;
+                            } else {
+                                SDL_Log("MOVEMENT NOT POSSIBLE\n");
+                            }
+                            break;
+                        case SDLK_LEFT:
+                            if (movePossibilities[3] == 1) {
+                                (*player).playerPos.posY -= 1;
+                                hasChoose = 1;
+                                diceNumber--;
+                            } else {
+                                SDL_Log("MOVEMENT NOT POSSIBLE\n");
+                            }
+                            break;
+                        case SDLK_e:
+                            // If not in a room, but on a door
+                            if (map[(*player).playerPos.posX][(*player).playerPos.posY] >= 13 && (*player).roomIndexIn == -1) {
+                                (*player).roomIndexIn = map[(*player).playerPos.posX][(*player).playerPos.posY] - 13;
 
-                    //Move to a random pos into the room
-                    movePlayerToRandomPosInARoom(&newGame, indexPlayer, player);
+                                //Move to a random pos into the room
+                                movePlayerToRandomPosInARoom(&newGame, indexPlayer, player);
 
-                    printf("You can now make a request for someone !\n");
-                    printf("If you want to make a request -> 1\nOr else -> 0\n");
-                    scanf("%d", &choice);
-                    if (choice) {
-                        ChoosePlayerAndWeapon(&nameChoice, &weaponChoice);
-                        indexPlayer = getIndexByName(&newGame, &nameChoice);
-                        if (indexPlayer<10) {
-                            newGame.allThePlayers[indexPlayer]->roomIndexIn = player->roomIndexIn;
+                                SDL_Log("You can now make a request for someone !\n");
+                                SDL_Log("If you want to make a request -> 1\nOr else -> 0\n");
+                                choiceText = getInputStringFromPlayer();
+                                sscanf(choiceText, "%d", &choice);
+                                if (choice) {
+                                    ChoosePlayerAndWeapon(&nameChoice, &weaponChoice);
+                                    indexPlayer = getIndexByName(&newGame, &nameChoice);
+                                    if (indexPlayer<10) {
+                                        newGame.allThePlayers[indexPlayer]->roomIndexIn = player->roomIndexIn;
 
-                            //Move to a random pos into the room
-                            movePlayerToRandomPosInARoom(&newGame, indexPlayer, newGame.allThePlayers[indexPlayer]);
-                        } else {
-                            newGame.NPCs[indexPlayer-10]->roomIndexIn = player->roomIndexIn;
+                                        //Move to a random pos into the room
+                                        movePlayerToRandomPosInARoom(&newGame, indexPlayer, newGame.allThePlayers[indexPlayer]);
+                                    } else {
+                                        newGame.NPCs[indexPlayer-10]->roomIndexIn = player->roomIndexIn;
 
-                            //Move to a random pos into the room
-                            movePlayerToRandomPosInARoom(&newGame, indexPlayer, newGame.NPCs[indexPlayer-10]);
-                        }
-                    }
-                    diceNumber = 0;
-                //If in a room and want to exit
-                } else if (player->roomIndexIn != -1) {
-                    for (int i = 0; i<newGame.allTheRooms[player->roomIndexIn]->numberOfDoors; i++) {
-                        printf("Exit %d : %d-%d\n", i+1, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posXOut, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posYOut);
-                    }
-                    do {
-                        printf("Choose your exit :");
-                        scanf("%d", &choice);
-                    } while (choice < 0 && choice >= newGame.allTheRooms[player->roomIndexIn]->numberOfDoors);
-                    player->playerPos.posX = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posXOut;
-                    player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posYOut;
-                    (*player).roomIndexIn = -1;
-                    diceNumber--;
-                // If not in a room and NOT on a door
-                } else {
-                    printf("MOVEMENT NOT POSSIBLE\n");
-                }
-                break;
-            case 6: // Skip a turn
-                diceNumber = 0;
-                break;
-            case 7: // Accuse someone
-                printf("WARNING : You are going to do an accusation. If you're sure about the killer you can continue. But if you're wrong, you will not be able to continue to play....\n");
-                printf("Continue -> 1\nExit -> 0");
-                scanf("%d", &choice);
-                if (choice) {
-                    printf("Choose the name of the killer:\n");
-                    for (int i = 0; i<6; i++) {
-                        printNameWithInt(i);
-                        printf("-> %d\n", i);
-                    }
-                    scanf("%d", &nameChoice);
-                    printf("Choose the weapon of the killer:\n");
-                    for (int i = 0; i<6; i++) {
-                        printWeaponsWithInt(i);
-                        printf("-> %d\n", i);
-                    }
-                    scanf("%d", &weaponChoice);
-                    printf("Choose the room where M. LeNoir has been killed:\n");
-                    for (int i = 0; i<9; i++) {
-                        printRoomsWithInt(i);
-                        printf("-> %d\n", i);
-                    }
-                    scanf("%d", &roomChoice);
+                                        //Move to a random pos into the room
+                                        movePlayerToRandomPosInARoom(&newGame, indexPlayer, newGame.NPCs[indexPlayer-10]);
+                                    }
+                                }
+                                diceNumber = 0;
+                                hasChoose = 1;
+                                //If in a room and want to exit
+                            } else if (player->roomIndexIn != -1) {
+                                for (int i = 0; i<newGame.allTheRooms[player->roomIndexIn]->numberOfDoors; i++) {
+                                    SDL_Log("Exit %d : %d-%d\n", i+1, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posXOut, newGame.allTheRooms[player->roomIndexIn]->allDoors[i].posYOut);
+                                }
+                                do {
+                                    SDL_Log("Choose your exit :");
+                                    choiceText = getInputStringFromPlayer();
+                                    sscanf(choiceText, "%d", &choice);
+                                } while (choice < 0 && choice > newGame.allTheRooms[player->roomIndexIn]->numberOfDoors);
+                                player->playerPos.posX = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posXOut;
+                                player->playerPos.posY = newGame.allTheRooms[player->roomIndexIn]->allDoors[choice-1].posYOut;
+                                (*player).roomIndexIn = -1;
+                                diceNumber--;
+                                hasChoose = 1;
+                                // If not in a room and NOT on a door
+                            } else {
+                                SDL_Log("MOVEMENT NOT POSSIBLE\n");
+                            }
+                            break;
+                        case SDLK_s: // Skip a turn
+                            diceNumber = 0;
+                            hasChoose = 1;
+                            break;
+                        case SDLK_a: // Accuse someone
+                            SDL_Log("WARNING : You are going to do an accusation. If you're sure about the killer you can continue. But if you're wrong, you will not be able to continue to play....\n");
+                            SDL_Log("Continue -> 1\nExit -> 0");
+                            choiceText = getInputStringFromPlayer();
+                            sscanf(choiceText, "%d", &choice);
+                            if (choice) {
+                                SDL_Log("Choose the name of the killer:\n");
+                                for (int i = 0; i<6; i++) {
+                                    printNameWithInt(i);
+                                    SDL_Log("-> %d\n", i);
+                                }
+                                choiceText = getInputStringFromPlayer();
+                                sscanf(choiceText, "%d", &choice);
+                                SDL_Log("Choose the weapon of the killer:\n");
+                                for (int i = 0; i<6; i++) {
+                                    printWeaponsWithInt(i);
+                                    SDL_Log("-> %d\n", i);
+                                }
+                                choiceText = getInputStringFromPlayer();
+                                sscanf(choiceText, "%d", &choice);
+                                SDL_Log("Choose the room where M. LeNoir has been killed:\n");
+                                for (int i = 0; i<9; i++) {
+                                    printRoomsWithInt(i);
+                                    SDL_Log("-> %d\n", i);
+                                }
+                                choiceText = getInputStringFromPlayer();
+                                sscanf(choiceText, "%d", &choice);
 
-                    printf("Keep the next screen secret, the identity of the killer will be revealed. If you're right, you'll win. Else, please, do not share any information !\n");
-                    printf("Write something to continue:");
-                    scanf("%d", &choice);
-                    printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-                    printf("The killer is :");
-                    printNameWithInt(newGame.killer.name);
-                    printWeaponsWithInt(newGame.killer.weapons);
-                    printRoomsWithInt(newGame.killer.room);
-                    if (newGame.killer.name == nameChoice && newGame.killer.weapons == weaponChoice && newGame.killer.room == roomChoice) {
-                        printf("You WIIINNN !!!!!!!!!!!!!!!!!!");
-                    } else {
-                        printf("You Lose, do not share any information");
+                                SDL_Log("Keep the next screen secret, the identity of the killer will be revealed. If you're right, you'll win. Else, please, do not share any information !\n");
+                                SDL_Log("Write something to continue:");
+                                choiceText = getInputStringFromPlayer();
+                                sscanf(choiceText, "%d", &choice);
+                                SDL_Log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+                                SDL_Log("The killer is :");
+                                printNameWithInt(newGame.killer.name);
+                                printWeaponsWithInt(newGame.killer.weapons);
+                                printRoomsWithInt(newGame.killer.room);
+                                if (newGame.killer.name == nameChoice && newGame.killer.weapons == weaponChoice && newGame.killer.room == roomChoice) {
+                                    SDL_Log("You WIIINNN !!!!!!!!!!!!!!!!!!");
+                                } else {
+                                    SDL_Log("You Lose, do not share any information");
+                                }
+                            }
+                            hasChoose = 1;
+                            break;
+                        default:
+                            SDL_Log("MOVEMENT NOT POSSIBLE\n");
+                            break;
                     }
-                }
-                break;
-            default:
-                printf("MOVEMENT NOT POSSIBLE\n");
-                break;
+            }
+            SDL_Delay(100);
         }
-        printf("Movement Left : %d\n", diceNumber);
-        printMapAndPlayer((*player), map, newGame);
+        SDL_Log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        SDL_Log("Movement Left : %d\n", diceNumber);
+        //printMapAndPlayer((*player), map, newGame);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        printMapAndPlayer(*player, map, newGame, renderer);
+        SDL_RenderPresent(renderer);
     }
-    printf("Before finishing your turn, you can accuse someone :");
-    scanf("%d", &choice);
+    SDL_Log("Before finishing your turn, you can accuse someone :");
+//    choiceText = getInputStringFromPlayer();
+//    sscanf(choiceText, "%d", &choice);
+    SDL_Log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 }
 
 void ChoosePlayerAndWeapon(CharactersName *nameChoice, Weapons *weaponChoice) {
-    printf("Choose the player :\n");
+    char* choiceText;
+    SDL_Log("Choose the player :\n");
     for (int i = 0; i <6; i++) {
         printNameWithInt(i);
-        printf("->%d\n", i);
+        SDL_Log("->%d\n", i);
     }
-    scanf("%d", nameChoice);
-    printf("Choose the weapons :\n");
+    choiceText = getInputStringFromPlayer();
+    sscanf(choiceText, "%d", nameChoice);
+    SDL_Log("Choose the weapons :\n");
     for (int i = 0; i <6; i++) {
         printWeaponsWithInt(i);
-        printf("->%d\n", i);
+        SDL_Log("->%d\n", i);
     }
-    scanf("%d", weaponChoice);
+    choiceText = getInputStringFromPlayer();
+    sscanf(choiceText, "%d", weaponChoice);
 }
 
 int getIndexByName(Game *newGame, CharactersName *nameChoice) {
@@ -371,6 +417,7 @@ void movePlayerToRandomPosInARoom(Game *newGame, int indexPlayer, Player *player
 
 void createANewGame(const Position *startersPos, Game *newGame, int map[25][24]) {
     int choice;
+    char* choiceText;
 
     //Create all rooms
     (*newGame).allTheRooms = (Room**) malloc(sizeof(Room*) * 10);
@@ -406,15 +453,18 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
     removeFromAnArray(allIndex, newGame->killer.weapons+5, 20);
     removeFromAnArray(allIndex, newGame->killer.room+10, 19);
 
-    printf("The killer has been choosen...........");
-    printf("\n");
+    SDL_Log("The killer has been choosen...........");
+    SDL_Log("\n");
 
 
     int indexPlayerGettingCard = 0;
 
     //Creation of players
-    printf("Choose number of player :");
-    scanf("%d", &choice);
+    SDL_Log("Choose number of player :");
+    char *text = getInputStringFromPlayer();
+
+    sscanf(text, "%d", &choice);
+    SDL_Log("%d", choice);
     (*newGame).numberOfPlayer = choice;
     (*newGame).allThePlayers = (Player**) malloc(sizeof(Player*) * newGame->numberOfPlayer);
     for (int i = 0; i < (*newGame).numberOfPlayer; i++) {
@@ -464,17 +514,98 @@ void createANewGame(const Position *startersPos, Game *newGame, int map[25][24])
 
     //Print Card
     for (int i = 0; i<newGame->numberOfPlayer; i++) {
-        printf("PLAYER %d, please look at your card, write them down, then enter to go to the other player !\n", i+1);
-        printf("Enter something to continue :");
-        scanf("%d", &choice);
-        printf("\n\n\n\n");
-        printf("Card of player %d : ", i+1);
+        SDL_Log("PLAYER %d, please look at your card, write them down, then enter to go to the other player !\n", i+1);
+        SDL_Log("Enter something to continue :");
+        choiceText = getInputStringFromPlayer();
+        sscanf(choiceText, "%d", &choice);
+        SDL_Log("\n\n\n\n");
+        SDL_Log("Card of player %d : ", i+1);
         printCardForAPlayer(newGame->allThePlayers[i]);
-        printf("\n\n\n\n");
-        printf("\nEnter something to continue :");
-        scanf("%d", &choice);
-        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        SDL_Log("\n\n\n\n");
+        SDL_Log("\nEnter something to continue :");
+        choiceText = getInputStringFromPlayer();
+        sscanf(choiceText, "%d", &choice);
+        SDL_Log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     }
+}
+
+char *getInputStringFromPlayer() {
+    TTF_Init();
+    SDL_StartTextInput();
+    SDL_bool done = SDL_FALSE;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_CreateWindowAndRenderer(960, 1000, SDL_WINDOW_SHOWN, &window, &renderer);
+    SDL_RenderSetVSync(renderer, 60);
+    SDL_Event newEvent;
+    char *text = (char*) malloc(sizeof(char)*50);
+    TTF_Font* font = TTF_OpenFont("Roboto-Bold.ttf", 100);
+    SDL_Color color = {255, 255, 30, 255};
+    SDL_Surface* temp = TTF_RenderText_Solid(font, " ", color);
+    SDL_Texture* textImage = SDL_CreateTextureFromSurface(renderer, temp);
+    SDL_Rect rect = {20, 20, temp->w, temp->h};
+    SDL_StartTextInput();
+    SDL_FreeSurface(temp);
+    temp = NULL;
+
+    while (!done) {
+        if (SDL_PollEvent(&newEvent)) {
+            switch (newEvent.type) {
+                case SDL_QUIT:
+                    /* Quit */
+                    done = SDL_TRUE;
+                    break;
+                case SDL_TEXTINPUT:
+                    /* Add new text onto the end of our text */
+                    strcat(text, newEvent.text.text);
+                    if (textImage) {
+                        SDL_DestroyTexture(textImage);
+                        textImage = NULL;
+                    }
+                    temp = TTF_RenderText_Solid(font, text, color);
+                    if (temp) {
+                        textImage = SDL_CreateTextureFromSurface(renderer, temp);
+                        rect.h = temp->h;
+                        rect.w = temp->w;
+                        SDL_FreeSurface(temp);
+                        temp = NULL;
+                    }
+                    break;
+                case SDL_KEYDOWN:
+                    if (newEvent.key.keysym.sym == SDLK_BACKSPACE) {
+                        text[strlen(text)-1] = '\0';
+                    }
+                    if (textImage) {
+                        SDL_DestroyTexture(textImage);
+                        textImage = NULL;
+                    }
+                    temp = TTF_RenderText_Solid(font, text, color);
+                    if (temp) {
+                        textImage = SDL_CreateTextureFromSurface(renderer, temp);
+                        rect.h = temp->h;
+                        rect.w = temp->w;
+                        SDL_FreeSurface(temp);
+                        temp = NULL;
+                    }
+                    if (newEvent.key.keysym.sym == SDLK_RETURN) {
+                        done = SDL_TRUE;
+                    }
+                    break;
+            }
+        }
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, textImage, NULL, &rect);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(20);
+    }
+    SDL_StopTextInput();
+    SDL_FreeSurface(temp);
+    SDL_DestroyTexture(textImage);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    TTF_Quit();
+    SDL_Quit();
+    return text;
 }
 
 void createRooms(const Game *newGame, int i) {
@@ -489,14 +620,16 @@ void createRooms(const Game *newGame, int i) {
 int chooseAPlayer(int index) {
     int error, choice;
     char* allNames[6] = {"MOUTARDE", "OLIVE", "VIOLET", "PERVENCHE", "ROSE", "LEBLANC"};
+    char* text;
     int allNamesIndex[6] = {0, 1, 2, 3, 4, 5};
     do {
-        printf("Choose your player :\n");
+        SDL_Log("Choose your player :\n");
         //List of all the characters available
         for (int j = 0; j<6-index; j++) {
-            printf("%d -> %s\n", allNamesIndex[j], allNames[allNamesIndex[j]]);
+            SDL_Log("%d -> %s\n", allNamesIndex[j], allNames[allNamesIndex[j]]);
         }
-        error = scanf("%d", &choice);
+        text = getInputStringFromPlayer();
+        error = sscanf(text, "%d", &choice);
     } while (choice < 0 || choice > 6 || error == 0);
     //Delete index of names for the listing
     for (int j = 0; j<6-index-1; j++) {
@@ -599,80 +732,80 @@ void createRoomsExitDoor(const Game *newGame) {
 void printNameWithInt(CharactersName name) {
     switch (name) {
         case 0 :
-            printf("Moutarde\t");
+            SDL_Log("Moutarde\t");
             break;
         case 1 :
-            printf("Olive\t");
+            SDL_Log("Olive\t");
             break;
         case 2 :
-            printf("Violet\t");
+            SDL_Log("Violet\t");
             break;
         case 3 :
-            printf("Pervenche\t");
+            SDL_Log("Pervenche\t");
             break;
         case 4 :
-            printf("Rose\t");
+            SDL_Log("Rose\t");
             break;
         case 5 :
-            printf("Leblanc\t");
+            SDL_Log("Leblanc\t");
             break;
-        default : printf("PROBLEMMMEE"); break;
+        default : SDL_Log("PROBLEMMMEE"); break;
     }
 }
 
 void printWeaponsWithInt(Weapons weaponsName) {
     switch (weaponsName) {
         case 0 :
-            printf("POIGNARD\t");
+            SDL_Log("POIGNARD\t");
             break;
         case 1 :
-            printf("CHANDELIER\t");
+            SDL_Log("CHANDELIER\t");
             break;
         case 2 :
-            printf("REVOLVER\t");
+            SDL_Log("REVOLVER\t");
             break;
         case 3 :
-            printf("CORDE\t");
+            SDL_Log("CORDE\t");
             break;
         case 4 :
-            printf("BARRE_DE_FER\t");
+            SDL_Log("BARRE_DE_FER\t");
             break;
         case 5 :
-            printf("CLE_A_MOLETTE\t");
+            SDL_Log("CLE_A_MOLETTE\t");
             break;
-        default : printf("PROBLEMMMEE"); break;
+        default : SDL_Log("PROBLEMMMEE"); break;
     }
 }
 
 void printRoomsWithInt(RoomsName roomsName) {
     switch (roomsName) {
         case 0 :
-            printf("HALL\t");
+            SDL_Log("HALL\t");
             break;
         case 1 :
-            printf("BAR\t");
+            SDL_Log("BAR\t");
             break;
         case 2 :
-            printf("SALLE_A_MANGER\t");
+            SDL_Log("SALLE_A_MANGER\t");
             break;
         case 3 :
-            printf("CUISINE\t");
+            SDL_Log("CUISINE\t");
             break;
         case 4 :
-            printf("SALLE_DE_BALLE\t");
+            SDL_Log("SALLE_DE_BALLE\t");
             break;
         case 5 :
-            printf("CONSERVATOIRE\t");
+            SDL_Log("CONSERVATOIRE\t");
             break;
         case 6 :
-            printf("BILLIARD\t");
+            SDL_Log("BILLIARD\t");
             break;
         case 7 :
-            printf("BIBLIOTHEQUE\t");
+            SDL_Log("BIBLIOTHEQUE\t");
             break;
         case 8 :
-            printf("BUREAU\t");
+            SDL_Log("BUREAU\t");
             break;
-        default : printf("PROBLEMMMEE"); break;
+        default : SDL_Log("PROBLEMMMEE"); break;
     }
 }

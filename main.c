@@ -1,14 +1,17 @@
 #include <stdio.h>
 #include <windows.h>
 #include "game.h"
+#include <SDL.h>
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    SDL_Init(SDL_INIT_EVERYTHING);
     srand(time(NULL));
     int choice;
     int maxFirstDiceRoll;
     int temp;
     int indexOfNextPlayer;
-    Player firstPlayerw;
+    int running = 1;
+    Player firstPlayer;
     Game newGame;
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
@@ -89,29 +92,42 @@ int main(void) {
                     0,  0,  0,  0,  0,  0,  0,  0,  0,  1,   2,   2,   2,   2,   1,   0,  0,  0,  0,  0,  0,  0,  0,  0
             },
     };
-    printf("--------------------||WELCOME TO CLUEDO||--------------------\n");
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Event newEvent;
+    const Uint8* keyState = SDL_GetKeyboardState(NULL);
+    SDL_Log("--------------------||WELCOME TO CLUEDO||--------------------\n");
     Position startersPos[6] = {{0, 6}, {0, 16}, {7, 23}, {18, 0}, {24, 9}, {24, 14}};
     createANewGame(startersPos, &newGame, map);
     maxFirstDiceRoll = 0;
     indexOfNextPlayer = 0;
     for (int i = 0; i<newGame.numberOfPlayer; i++) {
         temp = rollTheDice();
-        printf("Player %d : %d\n", i+1, temp);
+        SDL_Log("Player %d : %d\n", i+1, temp);
         if (temp > maxFirstDiceRoll) {
             maxFirstDiceRoll = temp;
             indexOfNextPlayer = i;
         }
     }
-    do {
-        printf("It's time for player %d\n", indexOfNextPlayer+1);
-        playerMovement(newGame.allThePlayers[indexOfNextPlayer], map, newGame);
-        //printf("Next choice : ");
-        //scanf("%d", &choice);
+    while (running) {
+        SDL_CreateWindowAndRenderer(960, 1000, SDL_WINDOW_SHOWN, &window, &renderer);
+        SDL_PollEvent(&newEvent);
+        if (newEvent.type == SDL_QUIT || keyState[SDL_GetScancodeFromKey(SDLK_ESCAPE)]) {
+            SDL_Quit();
+            running = 0;
+        }
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        printMapAndPlayer(*newGame.allThePlayers[indexOfNextPlayer], map, newGame, renderer);
+        SDL_RenderPresent(renderer);
+        SDL_Log("It's time for player %d\n", indexOfNextPlayer+1);
+        playerMovement(newGame.allThePlayers[indexOfNextPlayer], map, newGame, renderer);
         indexOfNextPlayer++;
         indexOfNextPlayer = indexOfNextPlayer%newGame.numberOfPlayer;
-    } while (choice != -1);
+        SDL_Delay(20);
+    }
     free(newGame.allTheRooms);
     free(newGame.allThePlayers);
-    printf("GOOD BYE!");
-    return 0;
+    SDL_Log("GOOD BYE!");
+    return EXIT_SUCCESS;
 }
